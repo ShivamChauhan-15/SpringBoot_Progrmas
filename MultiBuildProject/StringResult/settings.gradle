@@ -1,0 +1,10 @@
+//pluginManagement {
+//    repositories {
+//        gradlePluginPortal()
+//    }
+//}
+rootProject.name = 'StringResult'
+include ':Comparison'
+//project(':exchange-core').projectDir=new  File('../Exchange-Core')
+
+project(':Comparison').projectDir=new File('../Comparison')
