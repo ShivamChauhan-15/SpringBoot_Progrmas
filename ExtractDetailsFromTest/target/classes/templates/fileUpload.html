@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Async file upload with jQuery</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+<div >
+    <form method="post" action="" enctype="multipart/form-data" id="myform">
+        <div>
+            <input type="file" id="file" name="file"/>
+            <input type="button" class="button" value="Upload" id="but_upload">
+        </div>
+    </form>
+</div>
+
+<div id="response-container"></div> <!-- This div will contain the response -->
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#but_upload").click(function() {
+            var fd = new FormData();
+            var files = $('#file')[0].files[0];
+            fd.append('file', files);
+
+            $.ajax({
+                url: 'https://api.iceexchange.com/api/versions/1/images/extract/tx',
+                type: 'post',
+                data: fd,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    console.log('Server response:', response);
+
+                    var textdetails = response.text;
+
+                    // Regex patterns
+                    var utrpattern = /(UTR:\s+)+(\w+)/;
+                    var numberPattern = /([Tt]ransaction\s+[Ii][Dd]\s|[Tt]ransaction\s+[Ii][Dd]:\s|[Tt]ransaction\s+[Ii][Dd]\n|[Rr]eference\s+[Ii]d\s|Ref.\s[Nn]o:\s|Ref\s[Nn]o:\s|Ref\s|Transaction\sRef.\s[Nn]o:\s|UPI\sRef.\s[Nn]o:\s|DR\/)+(\w+\s*\d+)/;
+                    var amountPattern = /₹\s*(\d+(,\d{3})*(\.\d{1,2})?)/;
+
+                    // Extract data using regex
+                    var getdatatrn = textdetails.match(numberPattern);
+                    var getdatautr = textdetails.match(utrpattern);
+                    var finalUtrTrnNo = '';
+
+                    var amountMatch = textdetails.match(amountPattern);
+                    var amount = amountMatch ? amountMatch[1] : "";
+
+                    if (getdatautr) {
+                        if (getdatautr[2].length > 1) {
+                            finalUtrTrnNo = getdatautr[2];
+                        } else {
+                            finalUtrTrnNo = "";
+                        }
+                    } else if (getdatatrn) {
+                        if (getdatatrn[2].length > 1) {
+                            finalUtrTrnNo = getdatatrn[2];
+                        } else {
+                            finalUtrTrnNo = "";
+                        }
+                    }
+
+                    // Display the extracted information
+                    var jsonResponse = JSON.stringify(response, null, 2);  // Pretty-print the JSON response
+                    $('#response-container').html('<pre>Response from server: ' + jsonResponse + '</pre><br/>Transaction Id: ' + finalUtrTrnNo+ '</pre><br/>Amount: ' + amount);
+                },
+
+                error: function(xhr, status, error) {
+                    $('#response-container').text('Error: ' + error);
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>
+
