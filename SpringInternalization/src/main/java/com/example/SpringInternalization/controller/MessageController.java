@@ -37,4 +37,5 @@ public class MessageController {
     public ResponseEntity<?> login(Locale locale){
         return ResponseEntity.ok().body(messageSource.getMessage("Chennai Super Kings v Delhi Capitals",null, Locale.forLanguageTag(UtilMap.langMap.get("lang"))));
     }
+
 }
